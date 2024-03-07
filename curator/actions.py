@@ -333,7 +333,7 @@ class Close(object):
                         )
                 if not self.skip_flush:
                     try:
-                        self.client.indices.flush_synced(index=lst_as_csv, ignore_unavailable=True)
+                        self.client.indices.flush(index=lst_as_csv, ignore_unavailable=True, force=True)
                     except ConflictError as err:
                         if not self.ignore_sync_failures:
                             raise ConflictError(err.status_code, err.error, err.info)
@@ -1131,7 +1131,7 @@ class Rollover(object):
 
 class DeleteSnapshots(object):
     """Delete Snapshots Action Class"""
-    def __init__(self, slo, retry_interval=120, retry_count=3):
+    def __init__(self, slo, retry_interval=120, retry_count=2):
         """
         :arg slo: A :class:`curator.snapshotlist.SnapshotList` object
         :arg retry_interval: Number of seconds to delay betwen retries. Default:
@@ -1189,7 +1189,7 @@ class DeleteSnapshots(object):
         ):
                 raise exceptions.FailedExecution(
                     'Unable to delete snapshot(s) because a snapshot is in '
-                    'state "IN_PROGRESS"')
+                    'state "IN_PROGRESS" or other snapshot activity was detected')
         try:
             for snap in self.snapshot_list.snapshots:
                 self.loggit.info('Deleting snapshot {0}...'.format(snap))
